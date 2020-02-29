@@ -15,7 +15,7 @@ console.log(res.rows[0].message) // Hello world!
 
 const query = {
   // give the query a unique name
-   name: 'fetch-player-killcount',
+    name: 'fetch-player-killcount',
   text: 'SELECT count(*) FROM crkills WHERE characteruniquenumber = $1',
   values: [2386],
 }

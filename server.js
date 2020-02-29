@@ -18,7 +18,7 @@ app.get('/test', function (req, res) {
 app.listen(PORT, 'localhost', () => {
   console.log(`App listening on port ${PORT}!`)
 })
-   app.on('error', onError)
+    app.on('error', onError)
 
 
 function onError(error) {

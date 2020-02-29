@@ -30,4 +30,43 @@ const killsViaTimeRangeQuery = function(from, to, groupSeconds) {
   })
 }
 
-module.exports = { killsViaTimeRangeQuery }
+const killsBetween = function(from, to) {
+  return pool.query({
+    name: 'killsBetweenQuery',
+    text:
+      'select killCount,(select data from players where characteruniquenumber=sub.characteruniquenumber) as player from (select characteruniquenumber, count(*) as killCount from crkills where time >= $1 and time <= $2 group by characteruniquenumber) sub order by killCount desc;',
+    values: [from, to]
+  })
+}
+const nationKillsBetween = function(from, to) {
+  return pool.query({
+    name: 'nationKillsBetweenQuery',
+    text:
+      'select influence, count(*) as killCount from crkills where time >= $1 and time <= $2 group by influence;',
+    values: [from, to]
+  })
+}
+const mapKillsBetween = function(from, to) {
+  return pool.query({
+    name: 'mapKillsBetweenQuery',
+    text:
+      'select mapindex, count(*) as killCount from crkills where time >= $1 and time <= $2 group by mapindex order by killCount desc;',
+    values: [from, to]
+  })
+}
+const gearDeathsBetween = function(from, to) {
+  return pool.query({
+    name: 'gearDeathsBetweenQuery',
+    text:
+      'select gear, count(*) as deathCount from crkills inner join players on (players.characteruniquenumber = crkills.param1) where time >= $1 and time <= $2 group by gear;',
+    values: [from, to]
+  })
+}
+
+module.exports = {
+  killsViaTimeRangeQuery,
+  killsBetween,
+  nationKillsBetween,
+  mapKillsBetween,
+  gearDeathsBetween
+}

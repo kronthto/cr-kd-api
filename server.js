@@ -3,6 +3,7 @@ require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
 const responseTime = require('response-time')
+const cors = require('cors')
 const { query } = require('express-validator')
 
 const actions = require('./app/actions')
@@ -13,8 +14,19 @@ const app = express()
 app.enable('trust proxy')
 app.set('trust proxy', 'loopback')
 app.set('etag', false) // turn off
+
 app.use(morgan('combined'))
 app.use(responseTime())
+
+const corsMw = cors({
+  origin: '*',
+  allowedHeaders: '*',
+  credentials: false,
+  maxAge: 86400,
+  methods: 'GET'
+})
+app.use(corsMw)
+app.options('*', corsMw)
 
 app.get(
   '/q/killsViaTimeRange',

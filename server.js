@@ -6,20 +6,19 @@ const PORT = process.env.PORT || 3001
 
 const app = express()
 
-app.enable('trust proxy');
-app.set('trust proxy', 'loopback');
+app.enable('trust proxy')
+app.set('trust proxy', 'loopback')
 app.use(morgan('combined'))
 app.use(responseTime())
 
-app.get('/test', function (req, res) {
-	  res.json({msg:'Hello World!'});
-});
+app.get('/test', function(req, res) {
+  res.json({ msg: 'Hello World!' })
+})
 
 app.listen(PORT, 'localhost', () => {
   console.log(`App listening on port ${PORT}!`)
 })
-    app.on('error', onError)
-
+app.on('error', onError)
 
 function onError(error) {
   if (error.syscall !== 'listen') {
@@ -42,4 +41,3 @@ function onError(error) {
       throw error
   }
 }
-

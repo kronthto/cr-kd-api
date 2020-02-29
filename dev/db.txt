@@ -1,0 +1,39 @@
+
+docker run -d --name timescaledb -p 10.0.11.2:5432:5432 --restart=always -e POSTGRES_PASSWORD=xxx timescale/timescaledb:latest-pg11
+create user cr with encrypted password 'xxx';
+create user crread with encrypted password 'xxx';
+
+CREATE database cr;
+\c cr
+CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
+CREATE TABLE "crkills" (
+	"time" TIMESTAMPTZ NOT NULL,
+	"characteruniquenumber" INTEGER NOT NULL,
+	"influence" smallint NULL,
+	"mapindex" smallint NOT NULL,
+	"param1" INTEGER NOT NULL,
+	"pos_x" smallint NOT NULL,
+	"pos_y" smallint NOT NULL,
+	"pos_z" smallint NOT NULL
+);
+SELECT create_hypertable('crkills', 'time');
+
+CREATE INDEX crkills_param1_idx ON crkills (param1);
+CREATE INDEX crkills_mapindex_idx ON crkills (mapindex);
+CREATE INDEX crkills_influence_idx ON crkills (influence);
+CREATE INDEX crkills_characteruniquenumber_idx ON crkills (characteruniquenumber);
+
+CREATE TABLE characters (
+    characteruniquenumber integer NOT NULL PRIMARY KEY,
+    charactername character varying(63) NOT NULL,
+    createdtime character(23) NOT NULL
+);
+
+CREATE TABLE players (
+    characteruniquenumber integer NOT NULL PRIMARY KEY,
+    gear character(1) NOT NULL,
+    charactername character varying(63) NOT NULL,
+    createdtime character(23) NOT NULL,
+    data json NOT NULL
+);
+CREATE INDEX players_gear_idx ON players (gear);

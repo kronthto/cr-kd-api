@@ -1,0 +1,24 @@
+select mapindex,
+cast(count as decimal)/NULLIF((select count(*) from crkills where param1 = 14226 and mapindex=k.mapindex),0) as kd
+from
+(select count(*),mapindex from crkills where characteruniquenumber = 14226 group by mapindex) as k
+order by kd desc;
+
+select characteruniquenumber,
+cast(count as decimal)/NULLIF((select count(*) from crkills where param1 = k.characteruniquenumber and mapindex=3034 and time >= '2020-02-01'),0) as kd
+from
+(select count(*),characteruniquenumber from crkills where mapindex = 3034 and time >= '2020-02-01' group by characteruniquenumber) as k
+order by kd desc;
+
+select mapindex,cast(count as decimal)/NULLIF((select count(*) from crkills where param1 = 14226 and mapindex=k.mapindex),0) as kd from (select count(*),mapindex from crkills where characteruniquenumber = 14226 group by mapindex) as k order by kd desc;
+
+select characteruniquenumber, \012cast(count as decimal)/NULLIF((select count(*) from crkills where param1 = k.characteruniquenumber and mapindex=3034 and time >= '2020-02-01'),0) as kd \012from \012(select count(*),characteruniquenumber from crkills where mapindex = 3034 and time >= '2020-02-01' group by characteruniquenumber) as k \012order by kd desc;
+
+select tb, cnt, (select charactername from characters where characteruniquenumber=sub.characteruniquenumber) from (select time_bucket('2 seconds',time) as tb, characteruniquenumber,count(*) as cnt from crkills group by tb, characteruniquenumber order by cnt desc, tb asc limit 150) sub;
+select mapindex, tb, cnt, (select charactername from characters where characteruniquenumber=sub.characteruniquenumber) from (select mapindex,time_bucket('2 seconds',time) as tb, characteruniquenumber,count(*) as cnt from crkills where characteruniquenumber=11879 group by tb, characteruniquenumber,mapindex order by cnt desc, tb asc limit 20) sub;
+
+select mapindex,count(*) as cnt from crkills group by mapindex order by cnt desc limit 20;
+
+select count(*),time_bucket('30 days', time) mb from crkills group by mb order by mb asc;
+
+select mapindex, tb, cnt, (select charactername from characters where characteruniquenumber=sub.characteruniquenumber) from (select mapindex,time_bucket('2 seconds',time) as tb, characteruniquenumber,count(*) as cnt from crkills where characteruniquenumber in (select characteruniquenumber from players where gear='A') group by tb, characteruniquenumber,mapindex order by cnt desc, tb asc limit 70) sub;

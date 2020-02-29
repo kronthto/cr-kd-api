@@ -1,19 +1,34 @@
+require('dotenv').config()
+
 const express = require('express')
 const morgan = require('morgan')
 const responseTime = require('response-time')
+const { query } = require('express-validator')
+
+const actions = require('./app/actions')
 
 const PORT = process.env.PORT || 3001
-
 const app = express()
 
 app.enable('trust proxy')
 app.set('trust proxy', 'loopback')
+app.set('etag', false) // turn off
 app.use(morgan('combined'))
 app.use(responseTime())
 
-app.get('/test', function(req, res) {
-  res.json({ msg: 'Hello World!' })
-})
+app.get(
+  '/q/killsViaTimeRange',
+  [
+    query('from').isISO8601(),
+    query('to')
+      .optional()
+      .isISO8601(),
+    query('group')
+      .optional()
+      .isInt({ min: 30, max: 3600 })
+  ],
+  actions.killsViaTimeRange
+)
 
 app.listen(PORT, 'localhost', () => {
   console.log(`App listening on port ${PORT}!`)

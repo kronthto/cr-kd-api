@@ -30,6 +30,12 @@ const killsViaTimeRangeQuery = function(from, to, groupSeconds) {
   })
 }
 
+const latestKillDate = function() {
+  return pool.query({
+    name: 'latestKillDateQuery',
+    text: 'select time from crkills order by time desc limit 1;'
+  })
+}
 const killsBetween = function(from, to) {
   return pool.query({
     name: 'killsBetweenQuery',
@@ -65,6 +71,7 @@ const gearDeathsBetween = function(from, to) {
 
 module.exports = {
   killsViaTimeRangeQuery,
+  latestKillDate,
   killsBetween,
   nationKillsBetween,
   mapKillsBetween,

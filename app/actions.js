@@ -25,6 +25,7 @@ const routeRegistrar = function(app) {
     validate,
     killsViaTimeRange
   )
+  app.get('/q/latestKillDate', latestKillDate)
   app.get(
     '/q/killsBetween',
     [query('from').isISO8601(), query('to').isISO8601()],
@@ -71,6 +72,13 @@ const killsViaTimeRange = function(req, res, next) {
           return row
         })
       )
+    })
+    .catch(e => next(e))
+}
+const latestKillDate = function(req, res, next) {
+  db.latestKillDate()
+    .then(dbRes => {
+      res.json(dbRes.rows[0].time)
     })
     .catch(e => next(e))
 }

@@ -113,7 +113,9 @@ const killsBetween = function(req, res, next) {
           byGear,
           counts
         },
-        data
+        data: data
+          .slice(0, 1000)
+          .filter((el, idx) => idx < 100 || el.killcount >= 10)
       })
     })
     .catch(e => next(e))

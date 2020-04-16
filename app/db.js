@@ -68,6 +68,28 @@ const gearDeathsBetween = function(from, to) {
     values: [from, to]
   })
 }
+const bbList = function(createdTimes) {
+  return pool.query({
+    name: 'bbList',
+    text:
+      'select tb, cnt, (select charactername from characters where characteruniquenumber=sub.characteruniquenumber) ' +
+      "from (select time_bucket('2 seconds',time) as tb, characteruniquenumber,count(*) as cnt from crkills " +
+      'where characteruniquenumber in (select characteruniquenumber from characters where createdtime = ANY ($1)) ' +
+      'group by tb, characteruniquenumber order by cnt desc, tb asc limit 20) sub;',
+    values: [createdTimes]
+  })
+}
+const hsList = function(createdTimes) {
+  return pool.query({
+    name: 'bbList',
+    text:
+      'select tb, cnt, (select charactername from characters where characteruniquenumber=sub.characteruniquenumber) ' +
+      "from (select time_bucket('2 seconds',time) as tb, characteruniquenumber,count(*) as cnt from crkills " +
+      "where characteruniquenumber in (select characteruniquenumber from players where createdtime = ANY ($1) and gear='A') " +
+      'group by tb, characteruniquenumber order by cnt desc, tb asc limit 15) sub;',
+    values: [createdTimes]
+  })
+}
 
 module.exports = {
   killsViaTimeRangeQuery,
@@ -75,5 +97,7 @@ module.exports = {
   killsBetween,
   nationKillsBetween,
   mapKillsBetween,
-  gearDeathsBetween
+  gearDeathsBetween,
+  bbList,
+  hsList
 }

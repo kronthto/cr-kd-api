@@ -1,6 +1,7 @@
 const { query, validationResult } = require('express-validator')
 const db = require('./db')
 const mapinfo = require('./mapinfo')
+const listService = require('./lists')
 
 const validate = function(req, res, next) {
   const errors = validationResult(req)
@@ -50,6 +51,8 @@ const routeRegistrar = function(app) {
     validate,
     gearDeathsBetween
   )
+  app.get('/q/lists/bb', bbList)
+  app.get('/q/lists/hs', hsList)
 }
 
 const GEARMAP = {
@@ -157,6 +160,23 @@ const gearDeathsBetween = function(req, res, next) {
           return row
         })
       )
+    })
+    .catch(e => next(e))
+}
+
+const bbList = function(req, res, next) {
+  listService
+    .bbList()
+    .then(dbRes => {
+      res.json(dbRes)
+    })
+    .catch(e => next(e))
+}
+const hsList = function(req, res, next) {
+  listService
+    .hsList()
+    .then(dbRes => {
+      res.json(dbRes)
     })
     .catch(e => next(e))
 }

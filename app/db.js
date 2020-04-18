@@ -81,7 +81,7 @@ const bbList = function(createdTimes) {
 }
 const hsList = function(createdTimes) {
   return pool.query({
-    name: 'bbList',
+    name: 'hsList',
     text:
       'select tb, cnt, (select charactername from characters where characteruniquenumber=sub.characteruniquenumber) ' +
       "from (select time_bucket('2 seconds',time) as tb, characteruniquenumber,count(*) as cnt from crkills " +

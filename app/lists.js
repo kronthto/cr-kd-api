@@ -1,18 +1,5 @@
 const mysql_db = require('./mysql_db')
 const db = require('./db')
-const cache = require('memory-cache')
-
-const listCache = new cache.Cache()
-
-const memoize = function(key, timeout, generator) {
-  let res = listCache.get(key)
-  if (res) {
-    return res
-  }
-  res = generator()
-  listCache.put(key, res, timeout)
-  return res
-}
 
 const bbList = function() {
   return mysql_db
@@ -37,7 +24,18 @@ const hsList = function() {
     )
 }
 
-module.exports = {
-  bbList: () => memoize('bbList', 3600000, bbList),
-  hsList: () => memoize('hsList', 3600000, hsList)
+const lists = {}
+const manageListCache = function(name, generator, lifetime) {
+  lists[name] = generator()
+  setInterval(() => {
+    const generatorPromise = generator()
+    generatorPromise.then(() => {
+      lists[name] = generatorPromise
+    })
+  }, lifetime)
 }
+
+manageListCache('bbList', bbList, 3600000)
+manageListCache('hsList', hsList, 3600000)
+
+module.exports = lists

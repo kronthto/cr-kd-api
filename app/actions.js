@@ -165,16 +165,14 @@ const gearDeathsBetween = function(req, res, next) {
 }
 
 const bbList = function(req, res, next) {
-  listService
-    .bbList()
+  listService.bbList
     .then(dbRes => {
       res.json(dbRes)
     })
     .catch(e => next(e))
 }
 const hsList = function(req, res, next) {
-  listService
-    .hsList()
+  listService.hsList
     .then(dbRes => {
       res.json(dbRes)
     })

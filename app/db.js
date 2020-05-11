@@ -91,6 +91,15 @@ const hsList = function(createdTimes) {
   })
 }
 
+const brigActivity = function(name, from) {
+  return pool.query({
+    name: 'brigActivity',
+    text:
+      "select time_bucket('1 hour', time) as timeBucket, characteruniquenumber, count(*) as killCount from crkills where characteruniquenumber in (select characteruniquenumber FROM players WHERE data->>'brigade' = $1) and time >= $2 group by characteruniquenumber, timeBucket;",
+    values: [name, from]
+  })
+}
+
 module.exports = {
   killsViaTimeRangeQuery,
   latestKillDate,
@@ -99,5 +108,6 @@ module.exports = {
   mapKillsBetween,
   gearDeathsBetween,
   bbList,
-  hsList
+  hsList,
+  brigActivity
 }

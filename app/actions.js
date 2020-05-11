@@ -53,6 +53,12 @@ const routeRegistrar = function(app) {
   )
   app.get('/q/lists/bb', bbList)
   app.get('/q/lists/hs', hsList)
+  app.get(
+    '/q/brigActivity',
+    [query('name').isLength({ min: 2 }), query('from').isISO8601()],
+    validate,
+    brigActivity
+  )
 }
 
 const GEARMAP = {
@@ -175,6 +181,65 @@ const hsList = function(req, res, next) {
   listService.hsList
     .then(dbRes => {
       res.json(dbRes)
+    })
+    .catch(e => next(e))
+}
+
+const average = arr => arr.reduce((p, c) => p + c, 0) / arr.length
+const brigActivity = function(req, res, next) {
+  db.brigActivity(req.query.name, req.query.from)
+    .then(serviceRes => {
+      if (serviceRes.rows.length === 0) {
+        res.status(404)
+        res.send('No data found')
+        return
+      }
+      let playersMap = {}
+      let killsMap = {}
+      serviceRes.rows.forEach(row => {
+        let ts = row.timebucket.getTime()
+        if (!(ts in playersMap)) {
+          playersMap[ts] = 0
+          killsMap[ts] = 0
+        }
+        playersMap[ts]++
+        killsMap[ts] += Number(row.killcount)
+      })
+
+      const now = new Date()
+      now.setHours(now.getHours() - 1)
+      let from = new Date(req.query.from)
+      from.setHours(from.getHours() + 1)
+      from.setMinutes(0)
+      from.setSeconds(0)
+
+      let playersPerHour = {}
+      let killsPerHour = {}
+
+      while (from < now) {
+        let hour = from.getHours()
+        if (!(hour in playersPerHour)) {
+          playersPerHour[hour] = []
+          killsPerHour[hour] = []
+        }
+        let ts = from.getTime()
+        playersPerHour[hour].push(playersMap[ts] ? playersMap[ts] : 0)
+        killsPerHour[hour].push(killsMap[ts] ? killsMap[ts] : 0)
+        from.setHours(from.getHours() + 1)
+      }
+
+      const aggregateResult = map => {
+        let aggObj = {}
+        for (let i = 0; i < 24; i++) {
+          aggObj[i] = i in map ? average(map[i]) : 0
+        }
+        return aggObj
+      }
+
+      res.json({
+        players: aggregateResult(playersPerHour),
+        kills: aggregateResult(killsPerHour)
+      })
     })
     .catch(e => next(e))
 }

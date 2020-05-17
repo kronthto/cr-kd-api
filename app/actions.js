@@ -29,7 +29,13 @@ const routeRegistrar = function(app) {
   app.get('/q/latestKillDate', latestKillDate)
   app.get(
     '/q/killsBetween',
-    [query('from').isISO8601(), query('to').isISO8601()],
+    [
+      query('from').isISO8601(),
+      query('to').isISO8601(),
+      query('map')
+        .optional()
+        .isInt({ min: 1 })
+    ],
     validate,
     killsBetween
   )
@@ -92,7 +98,7 @@ const latestKillDate = function(req, res, next) {
     .catch(e => next(e))
 }
 const killsBetween = function(req, res, next) {
-  db.killsBetween(req.query.from, req.query.to)
+  db.killsBetween(req.query.from, req.query.to, req.query.map)
     .then(dbRes => {
       let byGear = { I: 0, M: 0, B: 0, A: 0 }
       let counts = {
@@ -149,6 +155,7 @@ const mapKillsBetween = function(req, res, next) {
       res.json(
         dbRes.rows.map(row => {
           return {
+            id: row.mapindex,
             map: mapinfo[row.mapindex] || row.mapindex,
             killcount: Number(row.killcount)
           }

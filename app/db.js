@@ -36,7 +36,15 @@ const latestKillDate = function() {
     text: 'select time from crkills order by time desc limit 1;'
   })
 }
-const killsBetween = function(from, to) {
+const killsBetween = function(from, to, map = null) {
+  if (map) {
+    return pool.query({
+      name: 'killsBetweenQueryMap',
+      text:
+        'select killCount,(select data from players where characteruniquenumber=sub.characteruniquenumber) as player from (select characteruniquenumber, count(*) as killCount from crkills where time >= $1 and time <= $2 and mapindex = $3 group by characteruniquenumber) sub order by killCount desc;',
+      values: [from, to, map]
+    })
+  }
   return pool.query({
     name: 'killsBetweenQuery',
     text:

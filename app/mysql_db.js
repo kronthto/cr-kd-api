@@ -28,6 +28,11 @@ const fetchActiveCrDates = function() {
   ).then(result => result.map(row => row.uniq))
 }
 
+const keepalive = function() {
+  return promiseQuery('SELECT CONNECTION_ID();')
+}
+
 module.exports = {
-  fetchActiveCrDates
+  fetchActiveCrDates,
+  keepalive
 }

@@ -25,6 +25,15 @@ const mapKillImg = function(resp, next, from, to, map) {
       const mapImgWidth = values[1].bitmap.width
       const scaleCoordRatio = mapImgWidth / MAPSIZE
       const xMirrorWidth = mapImgWidth - 1
+      const pointsToPixels =
+        values[0].rows.length / (mapImgWidth * values[1].bitmap.height)
+
+      let startAlpha = 0.9
+      if (pointsToPixels > 0.5) {
+        startAlpha = 0.2
+      } else if (pointsToPixels >= 0.33) {
+        startAlpha = 0.5
+      }
 
       let grouped = {}
 
@@ -35,9 +44,9 @@ const mapKillImg = function(resp, next, from, to, map) {
           grouped[x] = {}
         }
         if (!(z in grouped[x])) {
-          grouped[x][z] = 0
+          grouped[x][z] = startAlpha
         }
-        grouped[x][z]++
+        grouped[x][z] += 0.1
       })
 
       return new Promise((resolve, reject) => {
@@ -58,10 +67,11 @@ const mapKillImg = function(resp, next, from, to, map) {
     .then(data => {
       Object.keys(data.grouped).forEach(x => {
         Object.keys(data.grouped[x]).forEach(y => {
-          //   let redWithAlpha = red + Math.min(255, Math.round(data.grouped[x][y]*255));
+          let redWithAlpha =
+            red + Math.min(255, Math.round(data.grouped[x][y] * 255))
           let drawX = Number(x)
           let drawY = Number(y)
-          data.image.setPixelColor(redWithFullAlpha, drawX, drawY)
+          data.image.setPixelColor(redWithAlpha, drawX, drawY)
         })
       })
 

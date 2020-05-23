@@ -2,6 +2,7 @@ const { query, validationResult } = require('express-validator')
 const db = require('./db')
 const mapinfo = require('./mapinfo')
 const listService = require('./lists')
+const heatmapService = require('./heatmap')
 
 const validate = function(req, res, next) {
   const errors = validationResult(req)
@@ -64,6 +65,16 @@ const routeRegistrar = function(app) {
     [query('name').isLength({ min: 2 }), query('from').isISO8601()],
     validate,
     brigActivity
+  )
+  app.get(
+    '/q/heatmap/mapkills',
+    [
+      query('from').isISO8601(),
+      query('to').isISO8601(),
+      query('map').isInt({ min: 1 })
+    ],
+    validate,
+    mapKillsHeatmap
   )
 }
 
@@ -190,6 +201,16 @@ const hsList = function(req, res, next) {
       res.json(dbRes)
     })
     .catch(e => next(e))
+}
+
+const mapKillsHeatmap = function(req, res, next) {
+  heatmapService.mapKillImg(
+    res,
+    next,
+    req.query.from,
+    req.query.to,
+    req.query.map
+  )
 }
 
 const average = arr => arr.reduce((p, c) => p + c, 0) / arr.length

@@ -108,6 +108,15 @@ const brigActivity = function(name, from) {
   })
 }
 
+const mapKillPositions = function(from, to, map) {
+  return pool.query({
+    name: 'mapKillPositions',
+    text:
+      'select pos_x,pos_z from crkills where time >= $1 and time <= $2 and mapindex=$3;',
+    values: [from, to, map]
+  })
+}
+
 module.exports = {
   killsViaTimeRangeQuery,
   latestKillDate,
@@ -117,5 +126,6 @@ module.exports = {
   gearDeathsBetween,
   bbList,
   hsList,
-  brigActivity
+  brigActivity,
+  mapKillPositions
 }

@@ -67,6 +67,16 @@ const routeRegistrar = function(app) {
     brigActivity
   )
   app.get(
+    '/q/topbrigActivity',
+    [
+      query('from').isISO8601(),
+      query('fromHour').isInt({ min: 0, max: 23 }),
+      query('toHour').isInt({ min: 0, max: 23 })
+    ],
+    validate,
+    topbrigActivity
+  )
+  app.get(
     '/q/heatmap/mapkills',
     [
       query('from').isISO8601(),
@@ -268,6 +278,84 @@ const brigActivity = function(req, res, next) {
         players: aggregateResult(playersPerHour),
         kills: aggregateResult(killsPerHour)
       })
+    })
+    .catch(e => next(e))
+}
+const topbrigActivity = function(req, res, next) {
+  const fromDateStr = req.query.from
+  const fromHour = Number(req.query.fromHour)
+  const toHour = Number(req.query.toHour)
+
+  db.topBrigsInHours(fromDateStr)
+    .then(serviceRes => {
+      let brigMap = {}
+      serviceRes.rows.forEach(row => {
+        if (!row.brigade) {
+          return
+        }
+        let hour = row.timebucket.getHours()
+        if (hour < fromHour || hour > toHour) {
+          return
+        }
+        let brigade = row.brigade
+        let ts = row.timebucket.getTime()
+        if (!(brigade in brigMap)) {
+          brigMap[brigade] = {}
+        }
+        brigMap[brigade][ts] = Number(row.playercount)
+      })
+      serviceRes = null
+
+      const now = new Date()
+      now.setHours(now.getHours() - 1)
+      let from = new Date(fromDateStr)
+      from.setHours(from.getHours() + 1)
+      from.setMinutes(0)
+      from.setSeconds(0)
+
+      let playersPerHour = {}
+
+      while (from < now) {
+        let hour = from.getHours()
+        let ts = from.getTime()
+
+        Object.keys(brigMap).forEach(brig => {
+          if (!(brig in playersPerHour)) {
+            playersPerHour[brig] = {}
+          }
+          if (!(hour in playersPerHour[brig])) {
+            playersPerHour[brig][hour] = []
+          }
+          playersPerHour[brig][hour].push(
+            brigMap[brig][ts] ? brigMap[brig][ts] : 0
+          )
+        })
+
+        from.setHours(from.getHours() + 1)
+      }
+
+      brigMap = null
+
+      const aggregateResult = (map, brig) => {
+        let aggObj = { brig }
+        let sum = 0
+        for (let i = fromHour; i <= toHour; i++) {
+          aggObj[i] = i in map ? average(map[i]) : 0
+          sum += aggObj[i]
+        }
+        aggObj['sum'] = sum
+        return aggObj
+      }
+
+      let brigsAggregated = Object.keys(playersPerHour).map(brig =>
+        aggregateResult(playersPerHour[brig], brig)
+      )
+
+      playersPerHour = null
+
+      brigsAggregated.sort((a, b) => b.sum - a.sum)
+
+      res.json(brigsAggregated.slice(0, 25))
     })
     .catch(e => next(e))
 }

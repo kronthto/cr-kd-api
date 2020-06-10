@@ -108,6 +108,37 @@ const brigActivity = function(name, from) {
   })
 }
 
+const topBrigsInHours = function(fromDate) {
+  return pool.connect().then(client => {
+    let resultPromise = client
+      .query('BEGIN TRANSACTION;')
+      .then(() =>
+        client.query(
+          'CREATE TEMPORARY TABLE temp_player_brig (characteruniquenumber integer NOT NULL PRIMARY KEY, brigade VARCHAR(63) NULL) ON COMMIT DROP;'
+        )
+      )
+      .then(() =>
+        client.query(
+          "INSERT INTO temp_player_brig select characteruniquenumber,data->>'brigade' FROM players;"
+        )
+      )
+      .then(() =>
+        client.query({
+          name: 'topBrigsInHours',
+          text:
+            "select time_bucket('1 hour', time) as timeBucket, (select brigade from temp_player_brig where temp_player_brig.characteruniquenumber = crkills.characteruniquenumber) as brigade, count(distinct characteruniquenumber) as playerCount from crkills where time >= $1 group by brigade, timeBucket;",
+          values: [fromDate]
+        })
+      )
+
+    resultPromise
+      .then(() => client.query('commit;'))
+      .then(() => client.release())
+
+    return resultPromise
+  })
+}
+
 const mapKillPositions = function(from, to, map) {
   return pool.query({
     name: 'mapKillPositions',
@@ -127,5 +158,6 @@ module.exports = {
   bbList,
   hsList,
   brigActivity,
+  topBrigsInHours,
   mapKillPositions
 }

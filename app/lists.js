@@ -30,7 +30,7 @@ const hsList = function() {
     )
 }
 
-const lists = {}
+const lists = {"bbList": Promise.resolve([])}
 const manageListCache = function(name, generator, lifetime) {
   lists[name] = generator()
   setInterval(() => {
@@ -41,7 +41,7 @@ const manageListCache = function(name, generator, lifetime) {
   }, lifetime)
 }
 
-manageListCache('bbList', bbList, 3600000)
+//manageListCache('bbList', bbList, 3600000)
 manageListCache('hsList', hsList, 3600000)
 manageListCache('keepalive', keepalive, 60000)
 

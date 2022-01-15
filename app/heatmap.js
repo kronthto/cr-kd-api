@@ -9,7 +9,7 @@ const MAPSIZE = 10240
 const red = 0xff000000
 const redWithFullAlpha = red + 0xff
 
-const mapKillImg = function(resp, next, from, to, map) {
+const mapKillImg = function(resp, next, from, to, map, gear) {
   map = Number(map)
 
   let mapPath = mapDir + map + '.png'
@@ -20,7 +20,7 @@ const mapKillImg = function(resp, next, from, to, map) {
     return
   }
 
-  Promise.all([db.mapKillPositions(from, to, map), jimp.read(mapPath)])
+  Promise.all([db.mapKillPositions(from, to, map, gear), jimp.read(mapPath)])
     .then(values => {
       const mapImgWidth = values[1].bitmap.width
       const scaleCoordRatio = mapImgWidth / MAPSIZE

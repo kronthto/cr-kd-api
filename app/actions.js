@@ -81,6 +81,9 @@ const routeRegistrar = function(app) {
     [
       query('from').isISO8601(),
       query('to').isISO8601(),
+      query('gear')
+        .optional()
+        .isByteLength({ min: 1, max: 1 }),
       query('map').isInt({ min: 1 })
     ],
     validate,
@@ -219,7 +222,8 @@ const mapKillsHeatmap = function(req, res, next) {
     next,
     req.query.from,
     req.query.to,
-    req.query.map
+    req.query.map,
+    req.query.gear
   )
 }
 

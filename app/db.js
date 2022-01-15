@@ -139,7 +139,16 @@ const topBrigsInHours = function(fromDate) {
   })
 }
 
-const mapKillPositions = function(from, to, map) {
+const mapKillPositions = function(from, to, map, gear) {
+  if (gear) {
+    return pool.query({
+      name: 'mapKillPositionsGear',
+      text:
+        'select pos_x,pos_z from crkills where time >= $1 and time <= $2 and mapindex=$3 and characteruniquenumber in (select characteruniquenumber from players where gear=$4)',
+      values: [from, to, map, gear]
+    })
+  }
+
   return pool.query({
     name: 'mapKillPositions',
     text:
